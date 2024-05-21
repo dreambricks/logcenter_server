@@ -6,7 +6,6 @@ import io
 import csv
 import zipfile
 
-
 datalog = Blueprint('datalog', __name__)
 
 
@@ -17,7 +16,6 @@ class DataLog:
         self.status = status
         self.project = project
         self.additional = additional
-
 
     def save(self):
         collection = db['datalog']
@@ -43,7 +41,6 @@ class DataLog:
 
 @datalog.route('/datalog/upload', methods=['POST'])
 def formulario():
-
     data_hora_atual = datetime.now()
 
     data_hora_formatada = data_hora_atual.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -66,11 +63,17 @@ def formulario():
 
 @datalog.route('/datalog', methods=['GET'])
 def get_all_data():
-    docs = get_all_documents()
+    project = request.args.get('project')
+    query = {}
+    collection = db['datalog']
+
+    if project:
+        query['project'] = project
+
+    docs = list(collection.find(query))
 
     for log in docs:
         log['_id'] = str(log['_id'])
-
         log['timePlayed'] = log['timePlayed'].strftime("%Y-%m-%dT%H:%M:%SZ")
         log['uploadedData'] = log['uploadedData'].strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -79,11 +82,15 @@ def get_all_data():
 
 @datalog.route('/datalog/latest-uploaded-total', methods=['GET'])
 def get_latest_uploaded_data():
-    # Acessar a coleção que contém os registros de DataLog
+    project = request.args.get('project')
+    query = {}
     collection = db['datalog']
 
+    if project:
+        query['project'] = project
+
     # Encontrar o registro mais recente ordenando por 'uploadedData' em ordem decrescente
-    mais_recente = collection.find_one(sort=[('uploadedData', -1)])
+    mais_recente = collection.find_one(query, sort=[('uploadedData', -1)])
 
     if mais_recente is None:
         return make_response(jsonify({"error": "Nenhum dado encontrado"}), 404)
@@ -96,15 +103,21 @@ def get_latest_uploaded_data():
 
 @datalog.route('/datalog/status/count', methods=['GET'])
 def perform_aggregation():
-
     collection = db['datalog']
+    project = request.args.get('project')
 
     # Pipeline de agregação
-    pipeline = [
+    pipeline = []
+
+    # Adicionar etapa de filtragem se 'project' estiver presente
+    if project:
+        pipeline.append({"$match": {"project": project}})
+
+    pipeline.extend([
         {"$group": {"_id": "$status", "count": {"$sum": 1}}},
         {"$sort": {"_id": 1}},
         {"$project": {"status": "$_id", "_id": 0, "count": 1}}
-    ]
+    ])
 
     # Executar a operação de agregação
     aggregation_result = list(collection.aggregate(pipeline))
@@ -112,9 +125,13 @@ def perform_aggregation():
     return jsonify(aggregation_result)
 
 
-def get_all_documents():
+def get_all_documents(project=None):
+    query = {}
     collection = db['datalog']
-    return list(collection.find())
+
+    if project:
+        query['project'] = project
+    return list(collection.find(query))
 
 
 # Método para gerar um arquivo CSV a partir dos documentos
@@ -141,9 +158,11 @@ def download_csv_zip():
     formatted_time = current_time.strftime(format_string)
     filename_csv = "logs"
 
+    # Obter o valor do parâmetro 'project' da URL
+    project = request.args.get('project')
 
-    # Obter todos os documentos da coleção
-    documents = get_all_documents()
+    # Obter todos os documentos da coleção, filtrando por projeto se fornecido
+    documents = get_all_documents(project)
 
     # Gerar um arquivo CSV a partir dos documentos
     csv_data = generate_csv(documents)
@@ -159,5 +178,3 @@ def download_csv_zip():
     response.headers['Content-Disposition'] = f"attachment; filename={filename_csv}_{formatted_time}.zip"
 
     return response
-
-
