@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request
 
 from datalog import datalog
+from project import project
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 app.register_blueprint(datalog)
+app.register_blueprint(project)
 
 
 # Rotas
@@ -13,6 +15,10 @@ app.register_blueprint(datalog)
 def home():
     return render_template('login.html')
 
+
+@app.route('/alive', methods=['GET'])
+def alive():
+    return "alive"
 
 
 def get_client_ip():

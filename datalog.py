@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 from mongo_setup import db
 
 from flask import Blueprint, request, jsonify, make_response, Response
@@ -29,18 +31,12 @@ class DataLog:
         result = collection.insert_one(data)
         return result.inserted_id
 
-    @staticmethod
-    def find_all():
-        collection = db['datalog']
-        logs = collection.find()
-        return [DataLog(**log) for log in logs]
-
     def __str__(self):
         return f"{self.uploadedData} - {self.timePlayed} - {self.status} - {self.project}  - {self.additional}"
 
 
 @datalog.route('/datalog/upload', methods=['POST'])
-def formulario():
+def create():
     data_hora_atual = datetime.now()
 
     data_hora_formatada = data_hora_atual.strftime("%Y-%m-%dT%H:%M:%SZ")
