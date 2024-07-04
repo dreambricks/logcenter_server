@@ -31,6 +31,23 @@ class DataLog:
         result = collection.insert_one(data)
         return result.inserted_id
 
+    # def save(self):
+    #     collection = db['datalog']
+    #
+    #     if not isinstance(self.project, ObjectId):
+    #         self.project = ObjectId(self.project)
+    #
+    #     data = {
+    #         'uploadedData': self.uploadedData,
+    #         'timePlayed': self.timePlayed,
+    #         'status': self.status,
+    #         'project': self.project,
+    #         'additional': self.additional
+    #     }
+    #
+    #     result = collection.insert_one(data)
+    #     return result.inserted_id
+
     def __str__(self):
         return f"{self.uploadedData} - {self.timePlayed} - {self.status} - {self.project}  - {self.additional}"
 
@@ -121,16 +138,78 @@ def perform_aggregation():
     return jsonify(aggregation_result)
 
 
+def get_project_name_by_oid(project_oid):
+    project = db['project'].find_one({'_id': ObjectId(project_oid)})
+    if project:
+        return project['name']
+    else:
+        return None
+
+
+def get_oid_by_project_name(project_name):
+    project = db['project'].find_one({'name': project_name})
+    if project:
+        return str(project['_id'])  # retorna o _id como uma string
+    else:
+        return None
+
+
 def get_all_documents(project=None):
+    datalog_collection = db['datalog']
     query = {}
-    collection = db['datalog']
 
     if project:
         query['project'] = project
-    return list(collection.find(query))
+
+    documents = list(datalog_collection.find(query))
+
+    for doc in documents:
+        project_oid = doc.get('project')
+        if project_oid:
+            project_name = get_project_name_by_oid(str(project_oid))
+            if project_name:
+                doc['project'] = project_name
+
+    return documents
 
 
-# Método para gerar um arquivo CSV a partir dos documentos
+# JEITO CERTO E MAIS RAPIDO
+
+# def get_all_documents(project=None):
+#     match_stage = {"$match": {}}  # Estágio inicial para combinar documentos
+#
+#     if project:
+#         match_stage["$match"]["project"] = ObjectId(project)
+#
+#     lookup_stage = {
+#         "$lookup": {
+#             "from": "project",  # Nome da coleção de projetos
+#             "localField": "project",
+#             "foreignField": "_id",
+#             "as": "project_info"
+#         }
+#     }
+#
+#     project_stage = {
+#         "$project": {
+#             "_id": 1,
+#             "uploadedData": 1,
+#             "timePlayed": 1,
+#             "status": 1,
+#             "projectName": {"$arrayElemAt": ["$project_info.name", 0]},  # Acessa o primeiro elemento do array
+#             "additional": 1
+#         }
+#     }
+#
+#     pipeline = [match_stage, lookup_stage, project_stage]
+#
+#     # Executar a agregação
+#     result = list(db.datalog.aggregate(pipeline))
+#     print(result)
+#
+#     return result
+
+
 def generate_csv(documentos):
     output = io.StringIO()
     writer = csv.writer(output)
@@ -155,7 +234,8 @@ def download_csv_zip():
     filename_csv = "logs"
 
     # Obter o valor do parâmetro 'project' da URL
-    project = request.args.get('project')
+    project_name = request.args.get('project')
+    project = get_oid_by_project_name(project_name)
 
     # Obter todos os documentos da coleção, filtrando por projeto se fornecido
     documents = get_all_documents(project)

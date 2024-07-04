@@ -8,8 +8,7 @@ project = Blueprint('project', __name__)
 
 
 class Project:
-    def __init__(self, _id, name, createdAt):
-        self._id = _id
+    def __init__(self, name, createdAt):
         self.name = name
         self.createdAt = createdAt
 
