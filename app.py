@@ -1,13 +1,17 @@
 from flask import Flask, render_template, request
 
 from datalog import datalog
+from login_manager import auth
 from project import project
+from project_details import project_details
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 app.register_blueprint(datalog)
 app.register_blueprint(project)
+app.register_blueprint(project_details)
+app.register_blueprint(auth)
 
 
 # Rotas

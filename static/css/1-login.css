@@ -1,0 +1,51 @@
+.container{
+    margin-top: 50px;
+}
+
+.logo img{
+    width: 24rem;
+}
+
+.login-form{
+    display:flex;
+    flex-direction: column;
+    gap:20px;
+}
+
+
+.form-item{
+    display:flex;
+    flex-direction: column;
+    width: 35rem;
+}
+
+.form-item input {
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: var(--outline);
+}
+
+.form-item label {
+    font-family: "ARABOTOBold", sans-serif;
+    font-size: 1.2rem;
+}
+
+input:focus {
+    outline: 2px solid var(--outline); /* Muda a cor da borda ao focar no input */
+}
+
+.submit-button {
+    margin-top: 10px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.submit-button input{
+    font-family: "ARABOTOBold", sans-serif;
+    padding: 10px 30px;
+    font-size: 1rem;
+    color: var(--outline);
+    background-color: var(--white);
+    border-radius: 10px;
+}

@@ -1,0 +1,74 @@
+* {
+    border: none;
+    margin: 0;
+}
+
+html {
+    height: 100%;
+    background-color: #36B0D5;
+}
+
+body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+@font-face {
+  font-family: "ARABOTONormal";
+  src: url("../../static/font/ArabotoNormal400.ttf") format("truetype");
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ARABOTOBold";
+  src: url("../../static/font/ArabotoBold400.ttf") format("truetype");
+  font-style: normal;
+}
+
+
+.container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    padding-top: 26px;
+}
+
+
+:root {
+    --orange: #f8ad15;
+    --white: #fff;
+    --black: #000;
+    --dark-grey: #313131;
+    --outline: #3592C3;
+}
+
+h1 {
+    font-weight: 400;
+    color: var(--white);
+    font-family: "ARABOTOBold", sans-serif;
+    text-transform: uppercase;
+    font-size: 32px;
+    margin: 0 auto;
+}
+
+p {
+    font-family: "ARABOTONormal", sans-serif;
+    color: var(--white);
+}
+
+label {
+    font-family: "ARABOTONormal", sans-serif;
+    color: var(--white);
+}
+
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
