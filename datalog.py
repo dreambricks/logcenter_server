@@ -189,7 +189,7 @@ def get_all_documents(project=None):
 
     pipeline = [match_stage, lookup_stage, project_stage]
 
-    result = list(db.datalog2.aggregate(pipeline))
+    result = list(db.datalog.aggregate(pipeline))
     print(result)
 
     return result
