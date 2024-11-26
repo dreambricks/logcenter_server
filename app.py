@@ -17,7 +17,7 @@ app.register_blueprint(auth)
 # Rotas
 @app.route('/')
 def home():
-    return render_template('login.html')
+    return render_template('1-login.html')
 
 
 @app.route('/alive', methods=['GET'])
