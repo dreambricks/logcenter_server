@@ -234,3 +234,33 @@ def download_csv_zip():
     response.headers['Content-Disposition'] = f"attachment; filename={filename_csv}_{formatted_time}.zip"
 
     return response
+
+
+def serialize_document(doc):
+    """ Converte ObjectId e outros tipos não serializáveis em strings. """
+    if isinstance(doc, dict):
+        return {key: serialize_document(value) for key, value in doc.items()}
+    elif isinstance(doc, list):
+        return [serialize_document(item) for item in doc]
+    elif isinstance(doc, ObjectId):
+        return str(doc)  # Converte ObjectId para string
+    else:
+        return doc  # Retorna o valor original se já for serializável
+
+
+@datalog.route('/datalog/getdatabyproject', methods=['GET'])
+def getdata():
+    project_name = request.args.get('project')
+    project = get_oid_by_project_name(project_name)
+
+    documents = get_all_documents(project)
+
+    # Convertendo os documentos para um formato JSON serializável
+    serialized_documents = serialize_document(documents)
+
+    return jsonify({
+        "status": "success",
+        "timestamp": datetime.now().isoformat(),
+        "project": project_name,
+        "data": serialized_documents
+    })
