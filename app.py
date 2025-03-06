@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 
+from cryptography import crypt
 from datalog import datalog
 from login_manager import auth
 from project import project
@@ -12,12 +13,13 @@ app.register_blueprint(datalog)
 app.register_blueprint(project)
 app.register_blueprint(project_details)
 app.register_blueprint(auth)
+app.register_blueprint(crypt)
 
 
 # Rotas
 @app.route('/')
 def home():
-    return render_template('1-login.html')
+    return render_template('login.html')
 
 
 @app.route('/alive', methods=['GET'])

@@ -54,7 +54,7 @@ def login():
     #         if request.form['submit_button'] == 'Entrar':
     #             return redirect(url_for('index'))
     #     return render_template('acesso_negado.html')
-    return render_template('1-login.html')
+    return render_template('login.html')
 
 
 @auth.route('/logout')

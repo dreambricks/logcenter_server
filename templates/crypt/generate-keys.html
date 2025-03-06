@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/logos/adidas.png') }}"
+          type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
+    <title>Gerar chaves</title>
+    <script src="{{url_for('static', filename='js/util.js')}}"></script>
+    <script src="{{url_for('static', filename='js/crypt/aes_encryption.js')}}"></script>
+    <script src="{{url_for('static', filename='js/crypt/rsa_encryption.js')}}"></script>
+    <script src="{{url_for('static', filename='js/crypt/db_encryption.js')}}"></script>
+    <script src="{{url_for('static', filename='js/crypt/generate-keys.js')}}"></script>
+
+    <style>
+        * {
+            border: none;
+            margin: 0;
+        }
+
+        .uppercase {
+            text-transform:uppercase;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 80px;
+            height: 100vh;
+        }
+
+        .help-texts {
+            font-family: "Roboto", sans-serif;
+            display: flex;
+            flex-direction: column;
+            font-size: 16px;
+            gap: 5px;
+        }
+
+        .help-texts h1 {
+            margin-bottom: 40px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            background-color: black;
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 6px;
+            font-weight: bolder;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #333;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="container">
+
+    <div class="help-texts">
+        <h1 class="uppercase">Gerador de Chaves</h1>
+        <p class="uppercase">Clique no botão para gerar chaves RSA e baixá-las.</p>
+        <p class="uppercase">Envie o arquivo "rsa_public.pem" para o seu contato.</p>
+        <p class="uppercase">mantenha o arquivo "rsa_private.pem" em um lugar seguro.</p>
+    </div>
+
+    <div class="button-container">
+        <button onclick="generateAndDownloadKeys()">GERAR CHAVES</button>
+    </div>
+
+</div>
+
+</body>
+</html>
