@@ -36,4 +36,5 @@ def get_client_ip():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    context = ('priv/fullchain.pem', 'priv/privkey.pem')
+    app.run(host='0.0.0.0', port=5000, ssl_context=context)
