@@ -7,8 +7,11 @@ from datetime import datetime
 import io
 import csv
 import zipfile
+from dbcrypt import db_decrypt_string
+from pkey_manager import PKeyManager
 
 datalog = Blueprint('datalog', __name__)
+pkeyMgr = PKeyManager("pkeys")
 
 
 class DataLog:
@@ -38,6 +41,31 @@ class DataLog:
 
     def __str__(self):
         return f"{self.uploadedData} - {self.timePlayed} - {self.status} - {self.project}  - {self.additional}"
+
+
+def get_project_is_encrypted(project_oid):
+    return get_project_private_key_index(project_oid) != -1
+
+
+def get_project_private_key_index(project_oid):
+    project_data = get_project_by_id(project_oid)
+    if "pkeyIndex" not in project_data:
+        return -1
+    return project_data["pkeyIndex"]
+
+
+def get_project_separator(project_oid):
+    project_data = get_project_by_id(project_oid)
+    if "separator" not in project_data:
+        return ","
+    return project_data["separator"]
+
+
+def get_project_add_headers(project_oid):
+    project_data = get_project_by_id(project_oid)
+    if "addHeaders" not in project_data:
+        return []
+    return project_data["addHeaders"].split(get_project_separator(project_oid))
 
 
 @datalog.route('/datalog/upload', methods=['POST'])
@@ -142,23 +170,18 @@ def get_oid_by_project_name(project_name):
         return None
 
 
-# def get_all_documents(project=None):
-#     datalog_collection = db['datalog']
-#     query = {}
-#
-#     if project:
-#         query['project'] = project
-#
-#     documents = list(datalog_collection.find(query))
-#
-#     for doc in documents:
-#         project_oid = doc.get('project')
-#         if project_oid:
-#             project_name = get_project_name_by_oid(str(project_oid))
-#             if project_name:
-#                 doc['project'] = project_name
-#
-#     return documents
+def get_project_by_id(project_id):
+    collection = db["project"]
+
+    project = collection.find_one({"_id": ObjectId(project_id)})
+
+    if project:
+        # Convert ObjectId and date fields to string for easier use
+        project["_id"] = str(project["_id"])
+        if "createdAt" in project:
+            project["createdAt"] = project["createdAt"].isoformat()
+
+    return project
 
 
 def get_all_documents(project=None):
@@ -190,21 +213,67 @@ def get_all_documents(project=None):
     pipeline = [match_stage, lookup_stage, project_stage]
 
     result = list(db.datalog.aggregate(pipeline))
-    print(result)
 
     return result
 
 
-def generate_csv(documentos):
+def generate_csv(documents):
     output = io.StringIO()
     writer = csv.writer(output)
 
-    if documentos:
-        header = documentos[0].keys()
+    if documents:
+        header = documents[0].keys()
         writer.writerow(header)
 
-    for doc in documentos:
+    for doc in documents:
         writer.writerow(doc.values())
+
+    output.seek(0)
+    return output
+
+
+def generate_csv_with_private_key(documents, project_oid):
+    output = io.StringIO()
+    writer = csv.writer(output, quotechar='|', quoting=csv.QUOTE_NONE, escapechar='\\')
+
+    priv_key_idx = get_project_private_key_index(project_oid)
+    separator = get_project_separator(project_oid)
+    add_headers = get_project_add_headers(project_oid)
+    priv_key = pkeyMgr.get_content(priv_key_idx)
+
+    if documents:
+        header = ["upload time", "play time", "status"]
+        for val in add_headers:
+            header.append(val)
+        writer.writerow(header)
+
+    count = 0
+    for doc in documents:
+        row = [
+            doc.get('uploadedData', 'N/A'),
+            doc.get('timePlayed', 'N/A'),
+            doc.get('status', 'N/A')
+        ]
+        additional_enc = doc.get('additional', 'N/A')
+        if additional_enc[-1] != '=':
+            continue
+        #print(f"encrypted string: '{additional_enc}'")
+        additional = db_decrypt_string(additional_enc, priv_key)
+        if additional == "":
+            # ignore non-encrypted logs
+            #print(f"ignoring non encrypted string: '{additional_enc}'")
+            continue
+        else:
+            if additional[-1] == '\r':
+                additional = additional[:-1]
+            #print(f"decrypted string: '{additional[:-1]}'")
+            for val in additional.split(separator):
+
+                row.append(val)
+        writer.writerow(row)
+        #if count > 10:
+        #    break
+        #count += 1
 
     output.seek(0)
     return output
@@ -222,7 +291,11 @@ def download_csv_zip():
 
     documents = get_all_documents(project)
 
-    csv_data = generate_csv(documents)
+    csv_data = None
+    if get_project_is_encrypted(project):
+        csv_data = generate_csv_with_private_key(documents, project)
+    else:
+        csv_data = generate_csv(documents)
 
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -264,3 +337,13 @@ def getdata():
         "project": project_name,
         "data": serialized_documents
     })
+
+
+if __name__ == '__main__':
+    project_name = "ciclic_vending_machine"
+    project = get_oid_by_project_name(project_name)
+    documents = get_all_documents(project)
+
+    if get_project_is_encrypted(project):
+        csv_data = generate_csv_with_private_key(documents, project)
+        print(csv_data.getvalue())

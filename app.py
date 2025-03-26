@@ -1,6 +1,7 @@
+import os
 from flask import Flask, render_template, request
 
-from cryptography import crypt
+from log_cryptography import crypt
 from datalog import datalog
 from login_manager import auth
 from project import project
@@ -36,5 +37,8 @@ def get_client_ip():
 
 
 if __name__ == '__main__':
-    context = ('priv/fullchain.pem', 'priv/privkey.pem')
-    app.run(host='0.0.0.0', port=5000, ssl_context=context)
+    if os.getenv("LOCAL_SERVER"):
+        app.run(host='0.0.0.0', port=5000)
+    else:
+        context = ('priv/fullchain.pem', 'priv/privkey.pem')
+        app.run(host='0.0.0.0', port=5000, ssl_context=context)
