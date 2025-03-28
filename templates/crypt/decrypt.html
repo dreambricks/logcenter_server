@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download</title>
+    <link rel="stylesheet" href="/static/css/download_styles.css">
+    <script src="/static/js/crypt/download_scripts.js"></script>
+    <script src="/static/js/crypt/rsa_public_key.js"></script>
+    <script src="/static/js/crypt/db_encryption.js"></script>
+    <script src="/static/js/crypt/aes_encryption.js"></script>
+    <script src="/static/js/crypt/rsa_encryption.js"></script>
+    <script src="/static/js/util.js"></script>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/projects/' + project + '/logo.svg') }}" width="50%">
+        <h2>Download dos dados</h2>
+        <p>Para fazer download dos dados, faça upload da chave de descriptografia.</p>
+        <div class="upload-area">
+            <input type="file" name="decript_key" id="decript_key" accept=".pem">
+        </div>
+        <input type="hidden" id="encryptedText" value="{{data}}">
+        <button type="button" onclick="decryptText()">Baixar dados</button>
+    </div>
+</body>
+</html>

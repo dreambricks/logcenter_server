@@ -59,7 +59,7 @@ async function dbDecryptByte(encData, privateKey) {
         return result;
     }
     if (encData[0] != 49) {
-        alert("Invalid prefix in encrypted data");
+        console.log("Invalid prefix in encrypted data");
     }
     
     const encAesKey = encData.slice(1, 1 + AES_KEY_LENGTH);
