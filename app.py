@@ -1,13 +1,16 @@
 import os
 from flask import Flask, render_template, request
-
+from flask_cors import CORS
 from log_cryptography import crypt
 from datalog import datalog
 from login_manager import auth
 from project import project
 from project_details import project_details
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+CORS(app)
+load_dotenv()
 app.config.from_pyfile('config.py')
 
 app.register_blueprint(datalog)
@@ -38,7 +41,7 @@ def get_client_ip():
 
 if __name__ == '__main__':
     if os.getenv("LOCAL_SERVER"):
-        app.run(host='0.0.0.0', port=5000)
+        app.run(host='0.0.0.0', port=5000, debug=True)
     else:
         context = ('priv/fullchain.pem', 'priv/privkey.pem')
         app.run(host='0.0.0.0', port=5000, ssl_context=context)
