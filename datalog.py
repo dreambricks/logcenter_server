@@ -299,12 +299,12 @@ def download_csv_zip():
 
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        zipf.writestr(f"{filename_csv}_{formatted_time}.csv", csv_data.getvalue())
+        zipf.writestr(f"{project_name}_{formatted_time}_{filename_csv}.csv", csv_data.getvalue())
 
     # Configurar a resposta HTTP
     response = Response(zip_buffer.getvalue())
     response.headers['Content-Type'] = 'application/zip'
-    response.headers['Content-Disposition'] = f"attachment; filename={filename_csv}_{formatted_time}.zip"
+    response.headers['Content-Disposition'] = f"attachment; filename={project_name}_{formatted_time}_{filename_csv}.zip"
 
     return response
 
